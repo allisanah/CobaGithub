@@ -1,0 +1,47 @@
+<?php
+
+if (!defined('BASEPATH'))
+  exit('No direct script access allowed');
+
+class Payment_set extends CI_Controller {
+
+  public function __construct() {
+    parent::__construct(TRUE);
+    if ($this->session->userdata('logged') == NULL) {
+      header("Location:" . site_url('manage/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+    }
+    $this->load->model(array('payment/Payment_model', 'student/Student_model', 'period/Period_model', 'pos/Pos_model', 'bulan/Bulan_model', 'bebas/Bebas_model', 'bebas/Bebas_pay_model', 'logs/Logs_model'));
+
+  }
+
+    // payment view in list
+  public function index($offset = NULL) {
+    $this->load->library('pagination');
+        // Apply Filter
+        // Get $_GET variable
+    $f = $this->input->get(NULL, TRUE);
+
+    $data['f'] = $f;
+
+    $params = array();
+        // Tahun Ajaran
+    if (isset($f['n']) && !empty($f['n']) && $f['n'] != '') {
+      $params['search'] = $f['n'];
+    }
+
+    $paramsPage = $params;
+    $params['limit'] = 5;
+    $params['offset'] = $offset;
+    $data['payment'] = $this->Payment_model->get($params);
+
+    $config['per_page'] = 5;
+    $config['uri_segment'] = 4;
+    $config['base_url'] = site_url('manage/payment/index');
+    $config['suffix'] = '?' . http_build_query($_GET, '', "&");
+    $config['total_rows'] = count($this->Payment_model->get($paramsPage));
+    $this->pagination->initialize($config);
+
+    $data['title'] = 'Jenis Pembayaran';
+    $data['main'] = 'payment/payment_list';
+    $this->load->view('manage/layout', $data);
+  }

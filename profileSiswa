@@ -1,0 +1,26 @@
+<?php
+
+defined('BASEPATH') OR exit('No direct script access allowed');
+
+class Profile_student extends CI_Controller {
+
+  public function __construct()
+  {
+    parent::__construct();
+    if ($this->session->userdata('logged_student') == NULL) {
+      header("Location:" . site_url('student/auth/login') . "?location=" . urlencode($_SERVER['REQUEST_URI']));
+    }
+    $this->load->model(array('student/Student_model','logs/Logs_model'));
+    $this->load->helper(array('form', 'url'));
+  }
+
+  public function index($offset = NULL) {
+    $id = $this->session->userdata('uid_student');
+    if ($this->Student_model->get(array('id' => $id)) == NULL) {
+      redirect('student');
+    }
+    $data['student'] = $this->Student_model->get(array('id' => $id));
+    $data['title'] = 'Detail Profil';
+    $data['main'] = 'profile/profile_view_student';
+    $this->load->view('student/layout', $data);
+  }
